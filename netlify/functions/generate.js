@@ -4,20 +4,21 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    // 1. Ön yüzden gelen veriyi al
+    console.log("ADIM 1: İstek geldi!");
     const requestBody = JSON.parse(event.body);
-    const { mode, prompt } = requestBody; 
-    
-    // 2. Netlify kasasından şifreyi al
+    const { mode, prompt } = requestBody;
+    console.log("ADIM 2: Gelen veri okundu. Prompt:", prompt);
+
     const apiKey = process.env.GEMINI_API_KEY; 
-    
     if (!apiKey) {
-      throw new Error("API Anahtarı bulunamadı! Lütfen Netlify Environment Variables ayarlarını kontrol edin.");
+      console.error("KRİTİK HATA: Netlify'da GEMINI_API_KEY bulunamadı!");
+      throw new Error("API Anahtarı bulunamadı!");
     }
+    console.log("ADIM 3: Gizli kasa açıldı, API anahtarı mevcut.");
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-    // 3. Gemini'ye isteği at
+    console.log("ADIM 4: Gemini yapay zekasına bağlanılıyor...");
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -28,15 +29,12 @@ exports.handler = async function(event, context) {
 
     const data = await response.json();
 
-    // 4. Gemini'den hata gelirse çökmesini engelle ve hatayı ekrana bas
     if (data.error) {
-        return {
-          statusCode: 500,
-          body: JSON.stringify({ error: data.error.message })
-        };
+        console.error("ADIM 5'TE PATLADI (GEMINI İTİRAZ ETTİ):", data.error);
+        return { statusCode: 500, body: JSON.stringify({ error: data.error.message }) };
     }
 
-    // 5. Başarılı cevabı ön yüze gönder
+    console.log("ADIM 6: Gemini'den muhteşem cevap başarıyla alındı!");
     const generatedText = data.candidates[0].content.parts[0].text;
 
     return {
@@ -46,10 +44,7 @@ exports.handler = async function(event, context) {
     };
 
   } catch (error) {
-    // Eğer kodda bir şey ters giderse bize tam olarak ne olduğunu söylesin
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message })
-    };
+    console.error("BEKLENMEYEN SİSTEM HATASI:", error);
+    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };

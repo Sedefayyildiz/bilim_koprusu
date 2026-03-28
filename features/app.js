@@ -182,7 +182,7 @@ document.addEventListener("submit", (e) => {
   if (composer) composer.hidden = true;
   if (loading) loading.hidden = false;
 
-  fetch("/api/generate", {
+ fetch("/.netlify/functions/gemini", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ mode: state.mode, prompt }),

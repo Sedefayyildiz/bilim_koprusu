@@ -334,7 +334,7 @@
                 Format: 1. Konu Özeti, 2. Bütçe Dostu Malzeme Listesi (Kişi sayısına göre ayarlanmış), 3. Adım Adım Atölye Yönetimi, 4. Öğrenciler İçin GÜVENLİK UYARILARI (Bu kısım zorunludur).`;
             }
 
-            const url = `/api/generate`;
+            const url = '/.netlify/functions/generate';
             const payload = { mode: currentMode, prompt: query, format: "markdown", systemPrompt };
 
             try {

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilim Köprüsü</title>
+    <!-- Tailwind CSS (Hızlı ve modern tasarım için) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // Tailwind özel renk paleti ayarları (Koyu Mor, Sarı, Turuncu)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandPurple: '#2E0B52',
+                        brandPurpleLight: '#4B1D7D',
+                        brandYellow: '#FFD700',
+                        brandOrange: '#FF8C00'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Arayüz animasyonları ve özel stiller */
+        body {
+            background-color: #1a0530; /* Çok koyu mor arka plan */
+            background-image: radial-gradient(circle at top right, #2E0B52, transparent),
+                              radial-gradient(circle at bottom left, #4B1D7D, transparent);
+            background-attachment: fixed;
+            color: #ffffff;
+        }
+
+        .glass-card {
+            background: rgba(46, 11, 82, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Bekleme Ekranı Animasyonları (PRD Kural 6) */
+        .spin-gear {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .fly-rocket {
+            animation: fly 1s ease-in-out infinite alternate;
+        }
+        @keyframes fly {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-15px) scale(1.1); }
+        }
+
+        /* AI Çıktısı içindeki başlık ve listelerin stili (Kart görünümü için) */
+        .markdown-content h2, .markdown-content h3 {
+            color: #FFD700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 0.25rem;
+        }
+        .markdown-content ul, .markdown-content ol {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content strong {
+            color: #FF8C00;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased p-4 md:p-8">
+            <div class="max-w-6xl mx-auto">
+        <!-- Başlık ve Karşılama -->
+        <header class="text-center mb-12">
+            <div class="inline-block p-4 rounded-full bg-brandPurpleLight mb-4 shadow-[0_0_15px_rgba(255,215,0,0.5)]">
+                <i class="fa-solid fa-atom text-4xl text-brandYellow"></i>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-brandYellow to-brandOrange">
+                Bilim Köprüsü
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300">Teoriyi anında; uygulanabilir, eğlenceli, fiziksel deneylere dönüştür.</p>
+        </header>
+
+        <!-- Mod Seçimi (Kâşif veya Rehber) -->
+        <div id="modeSelection" class="grid md:grid-cols-2 gap-6 mb-10">
+            <button onclick="selectMode('kasif')" class="glass-card p-8 rounded-2xl hover:bg-brandPurpleLight transition-all duration-300 group border-b-4 border-b-brandYellow text-left">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-3xl font-bold text-brandYellow group-hover:text-white transition-colors">Ben Bir Kâşifim</h2>
+                    <i class="fa-solid fa-rocket text-3xl text-brandOrange group-hover:animate-bounce"></i>
+                </div>
+                <p class="text-gray-300">Merak ettiğin bir soruyu sor, senin için eğlenceli bir deney tasarlayalım.</p>
+            </button>
+
+            <button onclick="selectMode('rehber')" class="glass-card p-8 rounded-2xl hover:bg-brandPurpleLight transition-all duration-300 group border-b-4 border-b-brandOrange text-left">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-3xl font-bold text-brandOrange group-hover:text-white transition-colors">Ben Bir Rehberim</h2>
+                    <i class="fa-solid fa-chalkboard-user text-3xl text-brandYellow group-hover:animate-bounce"></i>
+                </div>
+                <p class="text-gray-300">İşleyeceğin konuyu ve sınıf mevcudunu yaz, öğretici bir atölye planı çıkaralım.</p>
+            </button>
+        </div>
+
+        <!-- Veri Giriş Alanı (Başlangıçta Gizli) -->
+        <div id="inputArea" class="hidden glass-card p-6 md:p-10 rounded-2xl mb-10 animate-fade-in">
+            <button onclick="resetApp()" class="text-sm text-brandYellow mb-4 hover:underline"><i class="fa-solid fa-arrow-left mr-1"></i> Mod Seçimine Dön</button>
+            
+            <h3 id="formTitle" class="text-2xl font-bold mb-2 text-white">Soranı Bekliyoruz...</h3>
+            <p id="formDesc" class="text-gray-400 mb-6">Detayları aşağıya girin.</p>
+
+            <!-- Kâşif: tek soru alanı -->
+            <div id="kasifInputBlock" class="hidden flex flex-col gap-4">
+                <textarea id="userInput" rows="3" class="w-full bg-brandPurple/50 border border-brandYellow/50 rounded-xl p-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brandOrange resize-none" placeholder="Buraya yazın..."></textarea>
+                <button type="button" onclick="generateScience()" class="w-full md:w-auto self-end bg-gradient-to-r from-brandOrange to-brandYellow text-brandPurple font-bold py-3 px-8 rounded-xl hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,140,0,0.4)] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-flask"></i> Oluştur
+                </button>
+            </div>
+
+            <!-- Rehber: üç ayrı alan (yatay düzen) -->
+            <div id="rehberInputBlock" class="hidden flex flex-col gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                    <div class="flex flex-col">
+                        <label for="workshopTopic" class="text-white text-sm font-medium mb-2">Atölye Konusu</label>
+                        <input type="text" id="workshopTopic" autocomplete="off" class="w-full bg-brandPurple/50 border border-brandYellow/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brandOrange" placeholder="Örn: Basınç" />
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="studentCount" class="text-white text-sm font-medium mb-2">Tahmini Öğrenci Sayısı</label>
+                        <input type="number" id="studentCount" min="1" step="1" inputmode="numeric" class="w-full bg-brandPurple/50 border border-brandYellow/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brandOrange [color-scheme:dark]" placeholder="Örn: 15" />
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="workshopDuration" class="text-white text-sm font-medium mb-2">Atölye Süresi (Dakika)</label>
+                        <input type="number" id="workshopDuration" min="1" step="1" inputmode="numeric" class="w-full bg-brandPurple/50 border border-brandYellow/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brandOrange [color-scheme:dark]" placeholder="Örn: 40" />
+                    </div>
+                </div>
+                <button type="button" onclick="generateScience()" class="w-full md:w-auto self-end bg-gradient-to-r from-brandOrange to-brandYellow text-brandPurple font-bold py-3 px-8 rounded-xl hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,140,0,0.4)] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-flask"></i> Oluştur
+                </button>
+            </div>
+        </div>
+
+        <!-- Yükleniyor Animasyonu (Dişliler ve Roket) -->
+        <div id="loadingArea" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="relative w-32 h-32 mb-6">
+                <!-- Dişli Çarklar -->
+                <i class="fa-solid fa-gear text-5xl text-gray-400 absolute top-0 left-0 spin-gear" style="animation-direction: reverse;"></i>
+                <i class="fa-solid fa-gear text-6xl text-brandYellow absolute top-4 right-0 spin-gear"></i>
+                <i class="fa-solid fa-gear text-4xl text-brandOrange absolute bottom-0 left-8 spin-gear" style="animation-duration: 4s;"></i>
+                <!-- Roket -->
+                <i class="fa-solid fa-rocket text-4xl text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 fly-rocket"></i>
+            </div>
+            <p class="text-xl font-bold text-brandYellow animate-pulse">Bilimsel veriler işleniyor...</p>
+            <p class="text-sm text-gray-400 mt-2">Bilimin kapıları aralanıyor...</p>
+        </div>
+
+        <!-- Sonuç Ekranı -->
+        <div id="resultArea" class="hidden">
+            <div id="sonuc-alani" class="glass-card rounded-2xl p-6 md:p-10 border-t-4 border-t-brandYellow relative">
+                
+                <p id="truncationNotice" class="hidden mb-4 text-sm text-brandYellow border border-brandYellow/40 rounded-lg px-4 py-3 bg-brandPurple/40">
+                    Yanıt token limiti nedeniyle yarım kalmış olabilir. <code class="text-white/90">GEMINI_MAX_OUTPUT_TOKENS_MARKDOWN</code> değerini <code class="text-white/90">.env</code> içinde artırıp sunucuyu yeniden başlatın.
+                </p>
+                
+                <div id="markdownOutput" class="markdown-content text-lg leading-relaxed max-h-[60vh] overflow-auto pr-2"></div>
+                
+                <div class="mt-8 pt-6 border-t border-brandPurpleLight flex justify-end">
+                    <div id="kaydet-menusu" class="relative group inline-block">
+                        <button class="bg-brandPurpleLight group-hover:bg-brandPurple border border-brandYellow text-white py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-download text-brandYellow"></i> Kaydet
+                            <svg class="w-4 h-4 ml-1 text-brandYellow transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+
+                        <div class="absolute right-0 bottom-full mb-2 w-56 bg-brandPurpleLight border border-brandYellow rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50 overflow-hidden">
+                            <div class="flex flex-col">
+                                <button onclick="downloadAsImage()" class="w-full text-left px-4 py-3 hover:bg-brandPurple flex items-center gap-3 transition-colors">
+                                    <svg class="w-5 h-5 text-brandYellow shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 12H22"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z"></path>
+                                    </svg>
+                                    <span class="text-sm text-gray-200">Görsel olarak kaydet</span>
+                                </button>
+
+                                <div class="h-px bg-brandYellow/30 w-full"></div>
+
+                                <button onclick="downloadAsText()" class="w-full text-left px-4 py-3 hover:bg-brandPurple flex items-center gap-3 transition-colors">
+                                    <svg class="w-5 h-5 text-brandYellow shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <span class="text-sm text-gray-200">Metin olarak kaydet</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Not: API anahtarını tarayıcıya koymuyoruz.
+        // İstekler yerel proxy endpoint'ine gider: POST /api/generate (server.py)
+        
+        let currentMode = "";
+        let rawResponseData = "";
+
+        // UI Elementleri
+        const modeSelection = document.getElementById('modeSelection');
+        const inputArea = document.getElementById('inputArea');
+        const formTitle = document.getElementById('formTitle');
+        const formDesc = document.getElementById('formDesc');
+        const userInput = document.getElementById('userInput');
+        const kasifInputBlock = document.getElementById('kasifInputBlock');
+        const rehberInputBlock = document.getElementById('rehberInputBlock');
+        const workshopTopic = document.getElementById('workshopTopic');
+        const studentCount = document.getElementById('studentCount');
+        const workshopDuration = document.getElementById('workshopDuration');
+        const loadingArea = document.getElementById('loadingArea');
+        const resultArea = document.getElementById('resultArea');
+        const markdownOutput = document.getElementById('markdownOutput');
+        const truncationNotice = document.getElementById('truncationNotice');
+
+        function selectMode(mode) {
+            currentMode = mode;
+            modeSelection.classList.add('hidden');
+            inputArea.classList.remove('hidden');
+            resultArea.classList.add('hidden');
+            userInput.value = "";
+            if (workshopTopic) workshopTopic.value = "";
+            if (studentCount) studentCount.value = "";
+            if (workshopDuration) workshopDuration.value = "";
+
+            if (mode === 'kasif') {
+                kasifInputBlock.classList.remove('hidden');
+                rehberInputBlock.classList.add('hidden');
+                formTitle.innerText = "Neyi Merak Ediyorsun Kâşif?";
+                formDesc.innerText = "Örneğin: Uçaklar nasıl uçar? Yıldızlar neden parlar? Mıknatıs nasıl çeker?";
+                userInput.placeholder = "Merak ettiğin o soruyu buraya yaz...";
+            } else {
+                kasifInputBlock.classList.add('hidden');
+                rehberInputBlock.classList.remove('hidden');
+                formTitle.innerText = "Atölye Detayları (Rehber Modu)";
+                formDesc.innerText = "Atölye konusunu, öğrenci sayısını ve süresini ayrı alanlara gir.";
+            }
+        }
+
+        function resetApp() {
+            modeSelection.classList.remove('hidden');
+            inputArea.classList.add('hidden');
+            resultArea.classList.add('hidden');
+            loadingArea.classList.add('hidden');
+            userInput.value = "";
+            if (workshopTopic) workshopTopic.value = "";
+            if (studentCount) studentCount.value = "";
+            if (workshopDuration) workshopDuration.value = "";
+            currentMode = "";
+        }
+
+        // Exponential Backoff ile API Çağrısı (Zorunlu Kurallara Göre)
+        async function fetchWithRetry(url, payload, retries = 5) {
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`HTTP Hata: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delays[i]));
+                }
+            }
+        }
+
+        function buildRehberPrompt() {
+            const topic = (workshopTopic && workshopTopic.value.trim()) || "";
+            const students = (studentCount && studentCount.value.trim()) || "";
+            const minutes = (workshopDuration && workshopDuration.value.trim()) || "";
+            if (!topic || !students || !minutes) {
+                return "";
+            }
+            return `Konu: ${topic}. Tahmini öğrenci sayısı: ${students}. Atölye süresi: ${minutes} dakika.`;
+        }
+
+        async function generateScience() {
+            let query = "";
+            if (currentMode === "rehber") {
+                query = buildRehberPrompt();
+                if (!query) {
+                    alert("Lütfen atölye konusu, öğrenci sayısı ve süreyi doldurun.");
+                    return;
+                }
+            } else {
+                query = userInput.value.trim();
+                if (!query) {
+                    alert("Lütfen önce bir şeyler yazın.");
+                    return;
+                }
+            }
+
+            // Arayüz geçişi (Yükleme ekranını aç)
+            inputArea.classList.add('hidden');
+            loadingArea.classList.remove('hidden');
+            resultArea.classList.add('hidden');
+            if (truncationNotice) truncationNotice.classList.add('hidden');
+
+            // AI Persona Ayarları (PRD Kural 5) ve Yeni Sade Dil Kuralı
+            let systemPrompt = "";
+            const sadeDilKurali = "Deney adımlarını ve sonuçlarını açıklarken kesinlikle karmaşık akademik terimler kullanma. Açıklamaları 8. sınıf seviyesindeki bir öğrencinin rahatça anlayabileceği kadar sade, anlaşılır ve günlük bir dille yap. ";
+            
+            if (currentMode === 'kasif') {
+                systemPrompt = `Sen hevesli, çocuklara ilham veren bir 'Hikayeci Bilim İnsanı'sın. 
+                Gelen soruyu 10-15 yaş grubuna uygun, kısa ve heyecanlı bir hikayeyle anlat. 
+                Ardından bu teoriyi kanıtlayacak, SADECE evdeki atık veya çok ucuz malzemelerle (pet şişe, karton, lastik, ip vb.) yapılabilecek adım adım bir 'Kendin Yap' (DIY) deneyi tasarla. 
+                ${sadeDilKurali}
+                Format: 1. Hikaye, 2. Kısıtlı Malzemeler Listesi, 3. Adım Adım Yapılışı, 4. GÜVENLİK UYARILARI (Bu kısım zorunludur).`;
+            } else {
+                systemPrompt = `Sen pratik ve çözüm odaklı bir 'Bilim Eğitmeni Asistanı'sın. 
+                Gelen konuya ve belirtilen kişi sayısına göre, sıfır veya çok düşük bütçeyle (geri dönüşüm malzemeleri kullanarak) yapılabilecek bir sınıf atölyesi planla. 
+                ${sadeDilKurali}
+                Format: 1. Konu Özeti, 2. Bütçe Dostu Malzeme Listesi (Kişi sayısına göre ayarlanmış), 3. Adım Adım Atölye Yönetimi, 4. Öğrenciler İçin GÜVENLİK UYARILARI (Bu kısım zorunludur).`;
+            }
+
+            const url = `/api/generate`;
+            const payload = { mode: currentMode, prompt: query, format: "markdown", systemPrompt };
+
+            try {
+                const result = await fetchWithRetry(url, payload);
+                const generatedText = result.text;
+                
+                if(generatedText) {
+                    rawResponseData = generatedText;
+                    if (truncationNotice) {
+                        truncationNotice.classList.toggle('hidden', !result.truncated);
+                    }
+                    // Markdown'ı HTML'e çevir ve ekrana bas
+                    markdownOutput.innerHTML = marked.parse(generatedText);
+                    loadingArea.classList.add('hidden');
+                    resultArea.classList.remove('hidden');
+                } else {
+                    throw new Error("Boş yanıt döndü.");
+                }
+            } catch (error) {
+                loadingArea.classList.add('hidden');
+                inputArea.classList.remove('hidden');
+                alert("Bir hata oluştu. Lütfen server.py çalışıyor mu ve sayfayı http://127.0.0.1:5174 üzerinden mi açtığınızı kontrol edin.");
+            }
+        }
+
+        // Çıktıyı kaydetme fonksiyonları (PRD Kural 2)
+        function downloadAsText() {
+            const textData = rawResponseData || document.getElementById('markdownOutput').innerText; 
+            const blob = new Blob([textData], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = currentMode === 'kasif' ? 'Bilim_Koprusu_Deney.txt' : 'Bilim_Koprusu_Atolye.txt';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function downloadAsImage() {
+            const content = document.getElementById('sonuc-alani');
+            const markdownOutput = document.getElementById('markdownOutput');
+            if (!content || !markdownOutput) return;
+            
+            // Kaydet butonunu resimde çıkmaması için geçici olarak gizle
+            const btnContainer = document.getElementById('kaydet-menusu');
+            if(btnContainer) btnContainer.style.display = 'none';
+
+            // Kaydırma kısıtlamalarını geçici olarak kaldır (Tam içerik capture için)
+            const originalMaxHeight = markdownOutput.style.maxHeight;
+            const originalOverflow = markdownOutput.style.overflow;
+            
+            markdownOutput.style.maxHeight = 'none';
+            markdownOutput.style.overflow = 'visible';
+
+            html2canvas(content, {
+                scale: 2, 
+                backgroundColor: "#1a113d",
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = 'Bilim-Koprusu-Gorsel.png';
+                link.click();
+                
+                // Orijinal stilleri geri yükle
+                markdownOutput.style.maxHeight = originalMaxHeight;
+                markdownOutput.style.overflow = originalOverflow;
+                
+                // Resmi çektikten sonra butonu geri getir
+                if(btnContainer) btnContainer.style.display = 'inline-block';
+            });
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>

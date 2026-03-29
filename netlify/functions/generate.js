@@ -6,7 +6,9 @@ exports.handler = async function(event, context) {
   try {
     console.log("ADIM 1: İstek geldi!");
     const requestBody = JSON.parse(event.body);
-    const { mode, prompt } = requestBody;
+    
+    // ÇÖZÜM: frontend'den gönderdiğimiz systemPrompt'u da artık alıyoruz
+    const { mode, prompt, systemPrompt } = requestBody; 
     console.log("ADIM 2: Gelen veri okundu. Prompt:", prompt);
 
     const apiKey = process.env.GEMINI_API_KEY; 
@@ -18,13 +20,23 @@ exports.handler = async function(event, context) {
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
+    // Gemini API'sine gidecek temel veri paketini hazırlıyoruz
+    const requestPayload = {
+      contents: [{ parts: [{ text: prompt }] }]
+    };
+
+    // ÇÖZÜM: Kurallarımız varsa, bunu Gemini'ın kuralları okuduğu özel "system_instruction" alanına ekliyoruz
+    if (systemPrompt) {
+      requestPayload.system_instruction = {
+        parts: [{ text: systemPrompt }]
+      };
+    }
+
     console.log("ADIM 4: Gemini yapay zekasına bağlanılıyor...");
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
+      body: JSON.stringify(requestPayload)
     });
 
     const data = await response.json();

@@ -317,49 +317,57 @@
             resultArea.classList.add('hidden');
             if (truncationNotice) truncationNotice.classList.add('hidden');
 
-            // AI Persona Ayarları (PRD Kural 5) ve Yeni Sade Dil Kuralı
-            let systemPrompt = "";
-            const sadeDilKurali = "Deney adımlarını ve sonuçlarını açıklarken kesinlikle karmaşık akademik terimler kullanma.";
-            
-            if (currentMode === 'kasif') {
-                systemPrompt = `Sen hevesli, çocuklara ilham veren bir 'Hikayeci Bilim İnsanı'sın. 
-                Gelen soruyu 10-15 yaş grubuna uygun, kısa ve heyecanlı bir hikayeyle anlat. 
-                Ardından bu teoriyi kanıtlayacak, SADECE evdeki atık veya çok ucuz malzemelerle (pet şişe, karton, lastik, ip vb.) yapılabilecek adım adım bir 'Kendin Yap' (DIY) deneyi tasarla. 
-                ${sadeDilKurali}
-                Format: 1. Hikaye, 2. Kısıtlı Malzemeler Listesi, 3. Adım Adım Yapılışı, 4. GÜVENLİK UYARILARI (Bu kısım zorunludur).`;
-            } else {
-                systemPrompt = `Sen pratik ve çözüm odaklı bir 'Bilim Eğitmeni Asistanı'sın. 
-                Gelen konuya ve belirtilen kişi sayısına göre, sıfır veya çok düşük bütçeyle (geri dönüşüm malzemeleri kullanarak) yapılabilecek bir sınıf atölyesi planla. 
-                ${sadeDilKurali}
-                Format: 1. Konu Özeti, 2. Bütçe Dostu Malzeme Listesi (Kişi sayısına göre ayarlanmış), 3. Adım Adım Atölye Yönetimi, 4. Öğrenciler İçin GÜVENLİK UYARILARI (Bu kısım zorunludur).`;
-            }
+           // AI Persona Ayarları ve Yeni Sade Dil Kuralı
+let systemPrompt = "";
 
-            const url = '/.netlify/functions/generate';
-            const payload = { mode: currentMode, prompt: query, format: "markdown", systemPrompt };
+if (currentMode === 'kasif') {
+    systemPrompt = `Sen çocuklara bilimi sevdiren, eğlenceli ve enerjik bir bilim rehberisin. 
+    Görevin, kullanıcının girdiği konuyla ilgili sadece 7-12 yaş arası çocukların evde kolayca bulabileceği malzemelerle yapılabilecek, güvenli ve pratik bir deney planı hazırlamaktır.
+    
+    KESİN KURALLAR:
+    1. Asla ağır teoriler, akademik terimler, karmaşık fizik kuralları ve uzun açıklamalar kullanma.
+    2. Eğlenceli, kısa ve merak uyandıran bir dil kullan. Ansiklopedik bilgi verme.
+    3. Format dışına çıkma. Sadece şu formatı kullan:
+       - Eğlenceli Deneyin Adı
+       - Gerekli Malzemeler
+       - Adım Adım Yapılışı
+       - Ne Gözlemledik? (Çocuğun anlayacağı tek cümlelik özet)
+       - GÜVENLİK UYARILARI (Zorunlu)
+    4. Çıktının sonuna hiçbir şekilde imza, isim, unvan, YÖNETİCİSİ veya [Adınız/Atölye Lideri] gibi eklemeler yapma. Sadece doğrudan istenen deney içeriğini üret.`;
+} else {
+    systemPrompt = `Sen pratik ve çözüm odaklı bir 'Bilim Eğitmeni Asistanı'sın. 
+    Gelen konuya ve belirtilen kişi sayısına göre, sıfır veya çok düşük bütçeyle (geri dönüşüm malzemeleri kullanarak) yapılabilecek bir sınıf atölyesi planla. 
+    
+    KESİN KURALLAR:
+    1. Deney adımlarını ve sonuçlarını açıklarken karmaşık akademik terimler kullanma.
+    2. Çıktının sonuna hiçbir şekilde imza, isim, unvan veya [Adınız/Atölye Lideri] gibi eklemeler yapma.
+    3. Format: 1. Konu Özeti, 2. Bütçe Dostu Malzeme Listesi (Kişi sayısına göre), 3. Adım Adım Atölye Yönetimi, 4. Öğrenciler İçin GÜVENLİK UYARILARI (Zorunlu).`;
+}
 
-            try {
-                const result = await fetchWithRetry(url, payload);
-                const generatedText = result.text;
-                
-                if(generatedText) {
-                    rawResponseData = generatedText;
-                    if (truncationNotice) {
-                        truncationNotice.classList.toggle('hidden', !result.truncated);
-                    }
-                    // Markdown'ı HTML'e çevir ve ekrana bas
-                    markdownOutput.innerHTML = marked.parse(generatedText);
-                    loadingArea.classList.add('hidden');
-                    resultArea.classList.remove('hidden');
-                } else {
-                    throw new Error("Boş yanıt döndü.");
-                }
-            } catch (error) {
-                loadingArea.classList.add('hidden');
-                inputArea.classList.remove('hidden');
-                alert("Bir hata oluştu. Lütfen server.py çalışıyor mu ve sayfayı http://127.0.0.1:5174 üzerinden mi açtığınızı kontrol edin.");
-            }
+const url = '/.netlify/functions/generate';
+const payload = { mode: currentMode, prompt: query, format: "markdown", systemPrompt };
+
+try {
+    const result = await fetchWithRetry(url, payload);
+    const generatedText = result.text;
+    
+    if(generatedText) {
+        rawResponseData = generatedText;
+        if (truncationNotice) {
+            truncationNotice.classList.toggle('hidden', !result.truncated);
         }
-
+        // Markdown'ı HTML'e çevir ve ekrana bas
+        markdownOutput.innerHTML = marked.parse(generatedText);
+        loadingArea.classList.add('hidden');
+        resultArea.classList.remove('hidden');
+    } else {
+        throw new Error("Boş yanıt döndü.");
+    }
+} catch (error) {
+    loadingArea.classList.add('hidden');
+    inputArea.classList.remove('hidden');
+    alert("Bir hata oluştu. Lütfen bağlantınızı kontrol edin.");
+} 
         // Çıktıyı kaydetme fonksiyonları (PRD Kural 2)
         function downloadAsText() {
             const textData = rawResponseData || document.getElementById('markdownOutput').innerText; 

@@ -3,7 +3,7 @@
 **Problem:** Kırsal veya dezavantajlı bölgelerdeki çocukların; bilim, mekanik ve teknoloji alanlarındaki meraklarını giderecek uygulamalı, fiziksel eğitim materyallerine ve rehberliğe erişim eksikliği. Bu durum eğitimde fırsat eşitsizliği yaratmaktadır.
 
 **Kullanıcı:** Platformun iki farklı ana kullanıcısı bulunmaktadır:
-1. **Kâşifler:** Teknolojiye meraklı ancak laboratuvar imkanları kısıtlı ortaokul ve lise öğrencileri.
+1. **Kâşifler:** Teknolojiye meraklı ancak laboratuvar imkanları kısıtlı ortaokul öğrencileri.
 2. **Rehberler:** Sahada veya sınıfta kısıtlı bütçeyle, çocuklara bilimi sevdirecek atölyeler düzenlemek isteyen gönüllüler ve öğretmenler.
 
 **Al'ın Rolü:** Kullanıcının seçtiği profile göre yapay zeka arka planda iki farklı persona ile çalışır.

@@ -108,7 +108,7 @@
                     <h2 class="text-3xl font-bold text-brandOrange group-hover:text-white transition-colors">Ben Bir Rehberim</h2>
                     <i class="fa-solid fa-chalkboard-user text-3xl text-brandYellow group-hover:animate-bounce"></i>
                 </div>
-                <p class="text-gray-300">İşleyeceğin konuyu ve sınıf mevcudunu yaz, öğretici bir atölye planı çıkaralım.</p>
+                <p class="text-gray-300">İşleyeceğin konuyu, sınıf mevcudunu ve ders süreni yaz, öğretici bir atölye planı çıkaralım.</p>
             </button>
         </div>
 
@@ -322,18 +322,18 @@ let systemPrompt = "";
 
 if (currentMode === 'kasif') {
     systemPrompt = `Sen çocuklara bilimi sevdiren, eğlenceli ve enerjik bir bilim rehberisin. 
-    Görevin, kullanıcının girdiği konuyla ilgili sadece 7-12 yaş arası çocukların evde kolayca bulabileceği malzemelerle yapılabilecek, güvenli ve pratik bir deney planı hazırlamaktır.
+    Görevin, kullanıcının girdiği konuyla ilgili sadece 11-15 yaş arası çocukların evde kolayca bulabileceği malzemelerle yapılabilecek, güvenli ve pratik bir deney planı hazırlamaktır.
     
     KESİN KURALLAR:
     1. Asla ağır teoriler, akademik terimler, karmaşık fizik kuralları kullanma.
     2. Eğlenceli ve merak uyandıran bir dil kullan. Ansiklopedik bilgi verme.
     3. Format dışına çıkma. Sadece şu formatı kullan:
-       - Bilim köprüsü deney uzmanı olduğunu söyle ve soru hakkında kısa, 7-12 yaş grubunun anlayabileceği bir açıklama yaz
+       - Bilim köprüsü deney uzmanı olduğunu söyle ve soru hakkında kısa, 11-15 yaş grubunun anlayabileceği bir açıklama yaz
        - Eğlenceli Deneyin Adı
+       - GÜVENLİK UYARILARI (Zorunlu)
        - Gerekli Malzemeler
        - Adım Adım Yapılışı
        - Ne Gözlemledik? (Çocuğun anlayacağı kısa özet)
-       - GÜVENLİK UYARILARI (Zorunlu)
     4. Çıktının sonuna hiçbir şekilde imza, isim, unvan, YÖNETİCİSİ veya [Adınız/Atölye Lideri] gibi eklemeler yapma. Sadece doğrudan istenen deney içeriğini üret.`;
 } else {
     systemPrompt = `Sen pratik ve çözüm odaklı bir 'Bilim Eğitmeni Asistanı'sın. 

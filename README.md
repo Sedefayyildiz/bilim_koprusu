@@ -23,7 +23,7 @@ Yapay zeka arka planda kullanıcının seçtiği role göre iki farklı persona 
 *  **Netlify:** GitHub entegrasyonu ile projenin hızlıca canlıya alınması.
 
 ## Sistem Mimarisi
-![Sistem Mimarisi Şeması](gorsel_yolu_buraya.png)
+![Sistem Mimarisi Şeması](assets/mimari.png)
 *(Kullanıcı -> Netlify -> Python Server -> Gemini API)*
 
 ## Öne Çıkan Özellikler & Kullanıcı Deneyimi

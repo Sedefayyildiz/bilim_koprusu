@@ -11,7 +11,7 @@ Yapay zeka arka planda kullanıcının seçtiği role göre iki farklı persona 
 * **Rehber Modu (Eğitmenler/Gönüllüler):** Sahada veya sınıfta kısıtlı bütçeyle çalışan eğitmenlerin girdiği konu başlıkları ve sınıf mevcudu için, adım adım atölye planları, malzeme listeleri ve güvenlik uyarıları üretir.
 
 ## Canlı Demo
-* **Yayın Linki:** https://bilimkoprusu.netlify.app/
+* **Yayın Linki:** https://bilimkoprusu-sciencebridge.netlify.app/
 * **Demo Video:** https://youtu.be/2niAd9I92u4
 
 ## Kullanılan Teknolojiler
